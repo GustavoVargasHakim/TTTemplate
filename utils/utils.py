@@ -13,8 +13,8 @@ def message(case, checkpoint=None, **kwargs):
         print('Preparing dataloader for: {}'.format(kwargs['dataset']))
     elif case == 'checkpoint':
         print("Loaded checkpoint (from epoch {})".format(checkpoint['epoch']))
-    elif case == 'Metrics':
-        print('\t\tTrain Loss \t\t Train Accuracy \t\t Train time \t\t Val Loss  \t\t Val Acccuracy \t\t Val time')
+    elif case == 'metrics':
+        print('\t\tTrain Loss \t\t Train Accuracy (%) \t\t Train time (s) \t\t Val Loss \t\t Val Acccuracy (%) \t\t Val time (s)')
     elif case == 'epoch':
         loss_train = kwargs['loss_train']
         acc_train = kwargs['acc_train']
@@ -26,5 +26,3 @@ def message(case, checkpoint=None, **kwargs):
         epochs = kwargs['epochs']
         print(('Epoch %d/%d:' % (epoch, epochs)).ljust(24) +
                '%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f' % (loss_train,acc_train,time_train,loss_val,acc_val,time_val))
-    elif case == 'start_source':
-        print('Starting source training')

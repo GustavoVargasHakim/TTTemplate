@@ -4,8 +4,8 @@ from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
-from cifar_new import CIFAR_New
-from visdatest import *
+from dataset.cifar_new import CIFAR_New
+from dataset.visdatest import *
 
 '''----------------------------------------Augmentation Zoo------------------------------------------'''
 NORM = ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
