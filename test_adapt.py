@@ -1,3 +1,4 @@
+import copy
 import torch
 import torch.backends.cudnn as cudnn
 from tqdm import tqdm
@@ -12,7 +13,7 @@ def experiment(args):
 
     '''Loading model'''
     utils.message('model', model=args.model)
-    model = model_utils.create_model(args)
+    model = model_utils.create_model(args).to(device)
     if args.source:
         path = args.root + '/weights/' + args.dataset + '_source.pth'
     else:
@@ -20,6 +21,7 @@ def experiment(args):
     checkpoint = torch.load(path)
     weights = checkpoint['state_dict']
     model.load_state_dict(weights)
+    state = copy.deepcopy(model.state_dict())
 
     '''Getting parameters'''
     parameters = test_utils.get_parameters(mode=args.mode)
@@ -46,7 +48,7 @@ def experiment(args):
     adapt_results = test_utils.AdaptMeter(length=len(teloader.dataset), iterations=iterations)
     for batch_idx, (inputs, labels) in tqdm(enumerate(teloader)):
         inputs, labels = inputs.to(device, non_blocking=True), labels.to(device, non_blocking=True)
-        model.load_state_dict(weights)
+        model.load_state_dict(state, strict=False)
         correctness = test_utils.test_batch(model, inputs, labels)
 
         for i in range(1, args.niter):
@@ -61,10 +63,11 @@ def experiment(args):
     if args.dataset in ['cifar10', 'cifar100']:
         print('Perturbation: ', args.corruption)
     for iter in iterations:
-        accuracy = adapt_results.accuracy(iter)
-        print('Iterations: ', iter)
-        print('Accuracy: ', accuracy)
-        adapt_results.print_result(iter)
+        if iter <= args.niter:
+            accuracy = adapt_results.accuracy(iter)
+            print('Iterations: ', iter)
+            print('Accuracy: ', accuracy)
+            adapt_results.print_result(iter)
 
 
 if __name__ == '__main__':

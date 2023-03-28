@@ -30,7 +30,7 @@ def main(args):
         if args.pretraining:
             weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
             model.load_state_dict(weights)
-    if args.optimizer == 'sgd':
+    if args.optim == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
         optimizer = torch.optim.Adam(model.parameters(), args.lr)
@@ -69,10 +69,10 @@ def main(args):
         te_sampler.set_epoch(epoch)
 
         # Training step
-        acc_train, loss_train, tr_epoch_time = train_utils.train(model, criterion, optimizer, trloader, augment=False, custom_forward=False)
+        acc_train, loss_train, tr_epoch_time = train_utils.train(model, criterion, optimizer, trloader, augment=False, custom_forward=True)
 
         # Valuation step
-        acc_val, loss_val, val_epoch_time = train_utils.validate(model, criterion, trloader, augment=False, custom_forward=False)
+        acc_val, loss_val, val_epoch_time = train_utils.validate(model, criterion, trloader, augment=False, custom_forward=True)
 
         if args.distributed:
             dist_utils.dist_message('epoch', rank, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,

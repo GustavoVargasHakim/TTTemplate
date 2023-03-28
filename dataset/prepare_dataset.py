@@ -4,8 +4,8 @@ from torch.utils.data import random_split
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
-from cifar_new import CIFAR_New
-from visdatest import *
+from dataset.cifar_new import CIFAR_New
+from dataset.visdatest import *
 
 '''----------------------------------------Augmentation Zoo------------------------------------------'''
 NORM = ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
@@ -41,6 +41,22 @@ office_test = transforms.Compose([
               transforms.ToTensor(),
               transforms.Normalize(
                 mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+
+simclr_transforms = transforms.Compose([
+        transforms.RandomResizedCrop(size=32, scale=(0.2, 1.)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+        transforms.RandomGrayscale(p=0.2),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+
+class TwoCropTransform:
+    """Create two crops of the same image"""
+    def __init__(self, transform):
+        self.transform = transform
+
+    def __call__(self, x):
+        return [self.transform(x), self.transform(x)]
 
 '''----------------------------------------Name of corruptions------------------------------------------'''
 common_corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur',
@@ -118,7 +134,7 @@ def prepare_val_data(args):
         shuffle=(v_sampler is None), num_workers=args.workers, pin_memory=True, sampler=v_sampler)
     return vloader, v_sampler
 
-def prepare_train_data(args):
+def prepare_train_data(args, contrastive=False):
     if args.dataset == 'cifar10':
         trset = torchvision.datasets.CIFAR10(root=args.dataroot,
             train=True, download=False, transform=cifar_train)
@@ -128,7 +144,10 @@ def prepare_train_data(args):
             train=True, download=False, transform=cifar_train)
         vset = None
     elif args.dataset == 'visda':
-        dataset = ImageFolder(root=args.dataroot + 'train/', transform=visda_train)
+        if contrastive:
+            dataset = ImageFolder(root=args.dataroot + 'train/', transform=TwoCropTransform(simclr_transforms))
+        else:
+            dataset = ImageFolder(root=args.dataroot + 'train/', transform=visda_train)
         trset, vset = random_split(dataset, [106678, 45719], generator=torch.Generator().manual_seed(args.seed))
     elif args.dataset == 'office':
         dataset = ImageFolder(root=args.dataroot + 'OfficeHomeDataset_10072016/' + args.category, transform=augment_transforms)

@@ -2,7 +2,7 @@ import timm
 import types
 import torch.nn as nn
 
-def create_model(args, weights=None, **kwargs):
+def create_model(args, weights=None, augment=False, **kwargs):
     '''
     Function to create (custom) models for TTT/TTA
     :param args: parsed arguments
@@ -16,9 +16,10 @@ def create_model(args, weights=None, **kwargs):
     model.global_pool = nn.AdaptiveAvgPool2d((1, 1))
     model.fc = nn.Linear(2048, classes[args.dataset])
     #Augmenting model for a TTT task
-    if kwargs['use_ttt']:
-        model = augment_model(model)
+    if augment:
+        model = augment_model(model, dataset=args.dataset, **kwargs)
     if args.dataset in ['cifar10', 'cifar100']:
+        model.conv1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=1, bias=False)
         model.forward = func_type(forward_small, model)
     elif args.dataset in ['visda', 'office']:
         model.forward = func_type(forward_large, model)
@@ -102,17 +103,18 @@ def model_sizes(dataset, layer):
         if layer == 4:
             channels, resolution = 2048, 4
 
-    elif dataset == 'visda' or dataset == 'office' or dataset == 'imagenet':
+
+    elif dataset in ['visda', 'office', 'imagenet']:
         if layer == 0:
-            channels, resolution = 64, 32
+            channels, resolution = 64, 56
         if layer == 1:
-            channels, resolution = 256, 112
+            channels, resolution = 256, 56
         if layer == 2:
-            channels, resolution = 512, 56
+            channels, resolution = 512, 28
         if layer == 3:
-            channels, resolution = 1024, 28
+            channels, resolution = 1024, 14
         if layer == 4:
-            channels, resolution = 2048, 14
+            channels, resolution = 2048, 7
     else:
         print('Dataset not found!')
         channels, resolution = None, None
