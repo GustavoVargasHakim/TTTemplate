@@ -36,7 +36,6 @@ def get_parameters(model, mode='layers', **kwargs):
         return parameters
 
 
-
 #Modify this custom loss function for your TTA needs (no crossentropy is allowed)
 class CustomLoss(nn.Module):
     def __init__(self, **kwargs):
@@ -68,7 +67,7 @@ def test_batch(model, inputs, labels):
 
 #Modify this custom function to adapt the model's parameters for one iteration based on your TTT/TTA needs
 def adapt_batch(model, inputs, criterion, optimizer, **kwargs):
-    model.inference = False
+    model.train()
     output = model(inputs)
     loss = criterion(output, K=kwargs['K'])
     loss.backward()
@@ -103,21 +102,3 @@ class AdaptMeter():
         print('Good first, bad after: ', len(self.good_bad[iter]))
         print('Bad first, good after: ', len(self.bad_good[iter]))
         print('Bad first, bad after: ', len(self.bad_bad[iter]))
-
-
-
-
-
-'''adapt = AdaptMeter(20, (1,3,10,15))
-for i in range(4):
-    y = torch.FloatTensor(5).uniform_() > 0.5
-    print('Labels: ', y)
-    for iter in range(1, 16):
-        if iter in (1,3,10,15):
-            r = torch.FloatTensor(5).uniform_() > 0.5
-            print('Predictions: ', r)
-            adapt.update(y, r, iter=iter)
-
-for iter in [1,3,10,15]:
-    print('Accuracy: ', adapt.accuracy(iter))
-    adapt.print_result(iter)'''

@@ -52,7 +52,6 @@ def experiment(args):
         correctness = test_utils.test_batch(model, inputs, labels)
 
         for i in range(1, args.niter):
-            model.train()
             test_utils.adapt_batch(model, inputs, criterion, optimizer)
             if i in iterations:
                 correctness_new = test_utils.test_batch(model, inputs, labels)
