@@ -46,6 +46,9 @@ def train(model, criterion, optimizer, train_loader, augment=False, custom_forwa
     losses = AverageMeter('Loss', ':.4e')
     acc = AverageMeter('Acc@1', ':6.2f')
 
+    # switch to training mode
+    model.train()
+
     start = time.time()
     for i, (images, labels) in enumerate(train_loader):
         images = images.cuda(non_blocking=True)

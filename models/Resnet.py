@@ -1,7 +1,5 @@
 import torch.nn as nn
 import torch.nn.functional as F
-
-
 def get_part(model,layer):
     if layer ==1:
         extractor = [model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1]
