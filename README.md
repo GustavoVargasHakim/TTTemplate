@@ -6,3 +6,12 @@ Pipeline template for Test-Time Training (TTT) and Test-Time-Adaptation (TTA). F
 3. Configurations are already done to easily work on popular datasets such as: CIFAR-10/100-C, CIFAR-10.1, OfficeHome and VisDA-C.
 4. Highly customizable, only focusing on modifying very specific functions that are inserted in the standard pipeline.
 5. Includes the following functionalities: source training, joint training, adaptation to a single dataset/corruption, multiple-corruption adaptation (for CIFAR-10/100-C).
+
+## Instructions of usage
+
+The TTTemplate's main files are the following:
+
+*'source_training.py': 
+*'joint_training.py':
+*'test.py':
+*'test_adapt.py':
