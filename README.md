@@ -28,6 +28,18 @@ Each project would require different tools and ingredients that are very special
 
 The folder `dataset` contains some additional utils related to dataset loading. They completely set up to work with the most common datasets in TTT/TTA. In general, they would require minimal modification, basing on the state-of-the-art as of 2023.
 
-## Source Training
+## Configuration through arguments
+
+The whole configuration for any project can be defined inside the `configuration.py` file. A quite simple parsed arguments system is used, where the different parameters are also organized in categories such as "Directories", "Dataset" or "Model". These are the minimum requirements for the whole TTTemplate pipeline to work, so please avoid changing them. Any new configuration related to your method should be added after the section "Method configuration". 
+
+Please carefully study all the available configurations to familiarize with what you need to change and which arguments you need to specify when running your programs. 
+
+## Model customization
+
+Model customization can be done inside `utils/model_utils.py`. The most important function is `create_model`, which receives the parsed arguments, (optional) pretrained weights, and a boolean argument called `augment` that determines whether to augment/custom a model or not, depending on your needs. Notice that the Timm model is loaded without a classifier, while it, along the final global pooling layer, are manually added after creation.
+
+When customizing a model, you need to take of two main things:
+
+* 
 
 
