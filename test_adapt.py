@@ -15,9 +15,9 @@ def experiment(args):
     utils.message('model', model=args.model)
     model = model_utils.create_model(args).to(device)
     if args.source:
-        path = args.root + '/weights/' + args.dataset + '_source.pth'
+        path = args.root + 'weights/' + args.dataset + '_source.pth'
     else:
-        path = args.root + '/weights/' + args.dataset + '_CUSTOM_ROOT_DEPENDING_ON_METHOD' + '.pth'
+        path = args.root + 'weights/' + args.dataset + '_CUSTOM_ROOT_DEPENDING_ON_METHOD' + '.pth'
     checkpoint = torch.load(path)
     weights = checkpoint['state_dict']
     model.load_state_dict(weights)
@@ -73,6 +73,6 @@ if __name__ == '__main__':
     args = configuration.argparser()
     if args.livia:
         args.dataroot = '/export/livia/home/vision/gvargas/data/'
-        args.root = '/export/livia/home/vision/gvargas/MaskUp'
+        args.root = '/export/livia/home/vision/gvargas/NAME_OF_PROJECT/'
 
     experiment(args)
