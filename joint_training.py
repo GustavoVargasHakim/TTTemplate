@@ -14,22 +14,23 @@ def main(args):
         rank, current_device = dist_utils.dist_configuration(args)
 
     '''Creating model'''
-    model = model_utils.create_model(args)
+    if args.dataset in ['visda', 'office']:
+        if args.pretraining:
+            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
+        else:
+            weights = torch.load(args.root + '/weights/resnet50_imagenet.pth')
+    else:
+        if args.pretraining:
+            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
+        else:
+            weights = None
+    model = model_utils.create_model(args, weights=weights)
     if args.distributed:
         dist_utils.dist_message('model', rank, model=args.model)
         model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
     else:
         utils.message('model', model=args.model)
-    if args.dataset == 'visda':
-        if args.pretraining:
-            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
-        else:
-            weights = torch.load(args.root + '/weights/resnet50_imagenet.pth')
-        model.load_state_dict(weights)
-    else:
-        if args.pretraining:
-            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
-            model.load_state_dict(weights)
+
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:

@@ -15,7 +15,7 @@ def main(args):
         rank, current_device = dist_utils.dist_configuration(args)
 
     '''Creating model'''
-    if args.dataset == 'visda':
+    if args.dataset in ['visda', 'office']:
         weights = torch.load(args.root + '/weights/resnet50_imagenet.pth')
     else:
         weights = None
