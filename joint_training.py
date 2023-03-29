@@ -16,12 +16,12 @@ def main(args):
     '''Creating model'''
     if args.dataset in ['visda', 'office']:
         if args.pretraining:
-            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
+            weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
         else:
-            weights = torch.load(args.root + '/weights/resnet50_imagenet.pth')
+            weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
     else:
         if args.pretraining:
-            weights = torch.load(args.root +'/weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
+            weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
         else:
             weights = None
     model = model_utils.create_model(args, weights=weights)
@@ -40,7 +40,7 @@ def main(args):
 
     '''Loading checkpoint'''
     if args.resume:
-        checkpoint = torch.load(args.root + '/weights/INSERT_NAME_OF_FILE.pth')
+        checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
         if args.distributed:
             model.module.load_state_dict(checkpoint['state_dict'])
         else:

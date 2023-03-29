@@ -4,7 +4,7 @@ def argparser():
     parser = argparse.ArgumentParser()
 
     # Directories
-    parser.add_argument('--root', type=str, default='/home/vhakim/projects/rrg-ebrahimi/vhakim/MaskUp/', help='Base path')
+    parser.add_argument('--root', type=str, default='/home/vhakim/projects/rrg-ebrahimi/vhakim/NAME_OF_PROJECT/', help='Base path')
     parser.add_argument('--dataroot', type=str, default='work/')
     parser.add_argument('--save', type=str, default='work/', help='Path for base training weights')
     parser.add_argument('--livia', action='store_true', help='To use LIVIA servers directories')

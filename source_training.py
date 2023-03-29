@@ -16,7 +16,7 @@ def main(args):
 
     '''Creating model'''
     if args.dataset in ['visda', 'office']:
-        weights = torch.load(args.root + '/weights/resnet50_imagenet.pth')
+        weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
     else:
         weights = None
     model = model_utils.create_model(args, weights=weights, augment=False)
@@ -36,7 +36,7 @@ def main(args):
 
     '''Loading checkpoint'''
     if args.resume:
-        checkpoint = torch.load(args.root + '/weights/INSERT_NAME_OF_FILE.pth')
+        checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
         if args.distributed:
             model.module.load_state_dict(checkpoint['state_dict'])
         else:
