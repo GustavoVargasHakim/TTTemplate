@@ -30,6 +30,8 @@ def create_model(args, weights=None, augment=False, **kwargs):
         del weights['fc.bias']
         model.load_state_dict(weights, strict=False)
 
+    return model
+
 #Modify this function to add additional components/blocks to the model based on your TTT needs
 def augment_model(model, **recipe):
     '''
