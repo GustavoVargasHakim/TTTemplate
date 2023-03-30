@@ -40,6 +40,27 @@ Model customization can be done inside `utils/model_utils.py`. The most importan
 
 When customizing a model, you need to take of two main things:
 
-* 
+* Model augmentation: adding new components to a Pytorch class-based model is done through a function called `augment_model`. Normally, this function receives the timm model, the name of the dataset, and a series of optional `**kwargs`. NOTE: the `**kwargs` must have been ideally received by the `create_model` function. Please see an example of how to add a new component to a model:
+
+```python
+def augment_model(model, **recipe):
+    '''
+    Augmenting model with additional modules (e.g., Y-shaped architectures, projectors, etc.)
+    :param model: original timm model
+    :param recipe: auxiliar information to add the new components (e.g. layer indices)
+    :return: augmented model
+    '''
+    #Example
+    layers = recipe['layers']
+    if layers[1]:
+        model.projector1 = nn.Conv2d(128, 128, 1)
+
+    return model
+```
+
+You can receive anything you need to augment your model in the form of a `**recipe`. 
+
+* Forward pass augmentation: when adding new components to your model (e.g., second head for a self-supervised task), the forward pass needs to also be modified. In this case, the `types` library is used to override the model's `__forward__` method. If you intend working with small datasets (i.e., CIFAR-10/100-C, 32 x 32 images), you should focus on the function `forward_small`. If you intend working with large datasets (i.e., VisDA-C, OfficeHome, 224 x 224 images), you should focus on the function `forward_large`. Notice that overriding this methods also help returning the feature maps of different layers (very useful in Deep Learning methods) along with the classification logits. 
+
 
 
