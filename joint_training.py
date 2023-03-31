@@ -12,6 +12,8 @@ def main(args):
     '''Initializing Distributed process (optional)'''
     if args.distributed:
         rank, current_device = dist_utils.dist_configuration(args)
+    else:
+        current_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
     '''Creating model'''
     if args.dataset in ['visda', 'office']:
@@ -24,7 +26,7 @@ def main(args):
             weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
         else:
             weights = None
-    model = model_utils.create_model(args, weights=weights)
+    model = model_utils.create_model(args, weights=weights).to(current_device)
     if args.distributed:
         dist_utils.dist_message('model', rank, model=args.model)
         model = DDP(model, device_ids=[current_device], find_unused_parameters=True)

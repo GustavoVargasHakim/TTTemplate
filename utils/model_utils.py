@@ -33,10 +33,11 @@ def create_model(args, weights=None, augment=False, **kwargs):
     return model
 
 #Modify this function to add additional components/blocks to the model based on your TTT needs
-def augment_model(model, **recipe):
+def augment_model(model, dataset, **recipe):
     '''
     Augmenting model with additional modules (e.g., Y-shaped architectures, projectors, etc.)
     :param model: original timm model
+    :param dataset: dataset name
     :param recipe: auxiliar information to add the new components (e.g. layer indices)
     :return: augmented model
     '''

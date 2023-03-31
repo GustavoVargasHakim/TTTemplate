@@ -52,7 +52,7 @@ def argparser():
     parser.add_argument('--dist-backend', default='gloo', type=str, help='distributed backend')
     parser.add_argument('--world-size', type=int, default=1, help='Number of nodes for training')
 
-    # MaskUp configuration
+    # Method configuration
     parser.add_argument('--layers', type=int, nargs='+', default=[0, 0, 0, 0])
 
 
