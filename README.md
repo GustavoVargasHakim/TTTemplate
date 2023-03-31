@@ -110,6 +110,9 @@ Adaptation requires its own set of tools, all found in `utils/test_utils.py`. Si
 *  **Evaluation:** the evaluation function `test_batch` is simply used to measure the accuracy ofver a batch, with no adaptation. 
 *  **Metric evaluation:** a special class `AdaptMeter` is constructed to keep track of accuracy across different numbers of iterations during adaptation. This is useful we adapt per batch and not to an entire dataset. Tipically, TTT/TTA models are adapted for 1, 3, 10, 20, and 50 iterations, as added by default as an argument for the class. An object of this class is used to update the correct predictions before and after adaptation, and to measure how many instances were correctly or misclassified after adapting the model. At the end, you can use it to compute final dataset accuracy using its `accuracy` method. Furthermore, it will compute for any given iteration you specify, as long as it was updated at the end of that specific iteration. 
 
+## Credits
+
+The TTTemplate is an effort to make Test-Time Adaptation and Test-Time Training experiments as fair as possible, all following the same standard pipeline, as well making it easy to perform experiments and develope new methods. If you found this repository useful for your research and/or developements, please consider citing it:
 
 
 
