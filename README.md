@@ -36,11 +36,11 @@ Please carefully study all the available configurations to familiarize with what
 
 ## Model customization
 
-Model customization can be done inside `utils/model_utils.py`. The most important function is `create_model`, which receives the parsed arguments, (optional) pretrained weights, and a boolean argument called `augment` that determines whether to augment/custom a model or not, depending on your needs. Notice that the Timm model is loaded without a classifier, while it, along the final global pooling layer, are manually added after creation.
+Model customization can be done inside `utils/model_utils.py`. The most important function is `create_model`, which receives the parsed arguments, (optional) pretrained weights, and a boolean argument called `augment` that determines whether to augment/custom a model or not, depending on your needs. Notice that the Timm model is loaded without a classifier; it is manually added along with the final global pooling layer after creation.
 
-When customizing a model, you need to take of two main things:
+When customizing a model, you need to take care of two main things:
 
-* Model augmentation: adding new components to a Pytorch class-based model is done through a function called `augment_model`. Normally, this function receives the timm model, the name of the dataset, and a series of optional `**kwargs`. NOTE: the `**kwargs` must have been ideally received by the `create_model` function. Please see an example of how to add a new component to a model:
+* Model augmentation: adding new components to a Pytorch class-based model is done through a function called `augment_model`. Normally, this function receives the standard timm model, the name of the dataset, and a series of optional `**kwargs`. NOTE: the `**kwargs` must have been ideally received by the `create_model` function. See an example of how to add a new component to a model:
 
 ```python
 def augment_model(model, **recipe):
@@ -91,6 +91,16 @@ def forward_large(self, x, feature=False):
     else:
         return x, proj #Returning projections
 ```
+ ## Training customization
+ 
+Customization for the training process can be found in the `utils/train_utils.py` file. The functions for training and validating are given for a single epoch, following the standard Pytorch protocols. However, this process is fully customizable, specifically regarding two main characteristics:
+
+* Data augmentation: in some TTT tasks, augmenting data may be needed. This can be useful particularly in the cases where standard DataSet classes are used. If you desire to augment your data, the functions `train` and `validate` have both an argument `augment` that needs to be True upon calling. Enabling this option executes the function `augment_func`, which recibes the images and the labels of a batch, and where you can customize any transformation/augmentation you need. 
+* Forward customization: if your model has been customized, or if you need to perform any additional operation with the model's output, you can enable the argument `custom_forward` in both `train` and `validate` functions. This options allows to call the `forward_func` function. You can fully customize this function to perform any additional process, different from just getting the classification logits and computing crossentropy. The output should always contain the logits (to messure accuracy) and the loss (for the backward pass). 
+* Loss customization: if you need additional loss components to crossnetropy loss, or if you need any specific loss function, you can customize the class `CustomLoss` inside `utils/train_utils.py`. It is also recommended to use it even if you just use crossentropy, for standardization of the code. By default, the class receives a series of `**kwargs`, where `crossentropy` corresponds to the `torch.nn.CrossEntropyLoss()` that needs to be addes as an argument. Any other needed argument can be passed. 
+
+## Test customization
+
 
 
 
