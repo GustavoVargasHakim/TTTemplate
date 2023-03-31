@@ -52,8 +52,9 @@ def augment_model(model, **recipe):
     '''
     #Example
     layers = recipe['layers']
+    model.layers = layers
     if layers[1]:
-        model.projector1 = nn.Conv2d(128, 128, 1)
+        model.projector1 = nn.Conv2d(256, 128, 3)
 
     return model
 ```
@@ -61,6 +62,35 @@ def augment_model(model, **recipe):
 You can receive anything you need to augment your model in the form of a `**recipe`. 
 
 * Forward pass augmentation: when adding new components to your model (e.g., second head for a self-supervised task), the forward pass needs to also be modified. In this case, the `types` library is used to override the model's `__forward__` method. If you intend working with small datasets (i.e., CIFAR-10/100-C, 32 x 32 images), you should focus on the function `forward_small`. If you intend working with large datasets (i.e., VisDA-C, OfficeHome, 224 x 224 images), you should focus on the function `forward_large`. Notice that overriding this methods also help returning the feature maps of different layers (very useful in Deep Learning methods) along with the classification logits. 
+
+The following example shows how to modify `forward_large` according to the example augmentation above. Here, we want to project the feature maps of the first layer through the previously defined projector:
+
+```python
+def forward_large(self, x, feature=False):
+    features = []
+    proj = [] #Place to save projections
+    x = self.conv1(x)
+    x = self.bn1(x)
+    x = self.act1(x)
+    x = self.maxpool(x)
+    x = self.layer1(x)
+    if self.layers[1]: #We choose adaptively to project the features
+        proj.append(self.projector1(x))   #Projection
+    features.append(x)
+    x = self.layer2(x)
+    features.append(x)
+    x = self.layer3(x)
+    features.append(x)
+    x = self.layer4(x)
+    features.append(x)
+    x = self.global_pool(x)
+    x = x.view(x.size(0), -1)
+    x = self.fc(x)
+    if feature:
+        return x, proj, features #Returning projections
+    else:
+        return x, proj #Returning projections
+```
 
 
 
