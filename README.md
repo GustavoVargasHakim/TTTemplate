@@ -36,11 +36,11 @@ Please carefully study all the available configurations to familiarize with what
 
 ## Model customization
 
-Model customization can be done inside `utils/model_utils.py`. The most important function is `create_model`, which receives the parsed arguments, (optional) pretrained weights, and a boolean argument called `augment` that determines whether to augment/custom a model or not, depending on your needs. Notice that the Timm model is loaded without a classifier, while it, along the final global pooling layer, are manually added after creation.
+Model customization can be done inside `utils/model_utils.py`. The most important function is `create_model`, which receives the parsed arguments, (optional) pretrained weights, and a boolean argument called `augment` that determines whether to augment/custom a model or not, depending on your needs. Notice that the Timm model is loaded without a classifier; it is manually added along with the final global pooling layer after creation.
 
-When customizing a model, you need to take of two main things:
+When customizing a model, you need to take care of two main things:
 
-* Model augmentation: adding new components to a Pytorch class-based model is done through a function called `augment_model`. Normally, this function receives the timm model, the name of the dataset, and a series of optional `**kwargs`. NOTE: the `**kwargs` must have been ideally received by the `create_model` function. Please see an example of how to add a new component to a model:
+* **Model augmentation:** adding new components to a Pytorch class-based model is done through a function called `augment_model`. Normally, this function receives the standard timm model, the name of the dataset, and a series of optional `**kwargs`. NOTE: the `**kwargs` must have been ideally received by the `create_model` function. See an example of how to add a new component to a model:
 
 ```python
 def augment_model(model, **recipe):
@@ -52,15 +52,67 @@ def augment_model(model, **recipe):
     '''
     #Example
     layers = recipe['layers']
+    model.layers = layers
     if layers[1]:
-        model.projector1 = nn.Conv2d(128, 128, 1)
+        model.projector1 = nn.Conv2d(256, 128, 3)
 
     return model
 ```
 
 You can receive anything you need to augment your model in the form of a `**recipe`. 
 
-* Forward pass augmentation: when adding new components to your model (e.g., second head for a self-supervised task), the forward pass needs to also be modified. In this case, the `types` library is used to override the model's `__forward__` method. If you intend working with small datasets (i.e., CIFAR-10/100-C, 32 x 32 images), you should focus on the function `forward_small`. If you intend working with large datasets (i.e., VisDA-C, OfficeHome, 224 x 224 images), you should focus on the function `forward_large`. Notice that overriding this methods also help returning the feature maps of different layers (very useful in Deep Learning methods) along with the classification logits. 
+* **Forward pass augmentation:** when adding new components to your model (e.g., second head for a self-supervised task), the forward pass needs to also be modified. In this case, the `types` library is used to override the model's `__forward__` method. If you intend working with small datasets (i.e., CIFAR-10/100-C, 32 x 32 images), you should focus on the function `forward_small`. If you intend working with large datasets (i.e., VisDA-C, OfficeHome, 224 x 224 images), you should focus on the function `forward_large`. Notice that overriding this methods also help returning the feature maps of different layers (very useful in Deep Learning methods) along with the classification logits. 
+
+The following example shows how to modify `forward_large` according to the example augmentation above. Here, we want to project the feature maps of the first layer through the previously defined projector:
+
+```python
+def forward_large(self, x, feature=False):
+    features = []
+    proj = [] #Place to save projections
+    x = self.conv1(x)
+    x = self.bn1(x)
+    x = self.act1(x)
+    x = self.maxpool(x)
+    x = self.layer1(x)
+    if self.layers[1]: #We choose adaptively to project the features
+        proj.append(self.projector1(x))   #Projection
+    features.append(x)
+    x = self.layer2(x)
+    features.append(x)
+    x = self.layer3(x)
+    features.append(x)
+    x = self.layer4(x)
+    features.append(x)
+    x = self.global_pool(x)
+    x = x.view(x.size(0), -1)
+    x = self.fc(x)
+    if feature:
+        return x, proj, features #Returning projections
+    else:
+        return x, proj #Returning projections
+```
+ ## Training customization
+ 
+Customization for the training process can be found in the `utils/train_utils.py` file. The functions for training and validating are given for a single epoch, following the standard Pytorch protocols. However, this process is fully customizable, specifically regarding two main characteristics:
+
+* **Data augmentation:** in some TTT tasks, augmenting data may be needed. This can be useful particularly in the cases where standard DataSet classes are used. If you desire to augment your data, the functions `train` and `validate` have both an argument `augment` that needs to be True upon calling. Enabling this option executes the function `augment_func`, which recibes the images and the labels of a batch, and where you can customize any transformation/augmentation you need. 
+* **Forward customization:** if your model has been customized, or if you need to perform any additional operation with the model's output, you can enable the argument `custom_forward` in both `train` and `validate` functions. This options allows to call the `forward_func` function. You can fully customize this function to perform any additional process, different from just getting the classification logits and computing crossentropy. The output should always contain the logits (to messure accuracy) and the loss (for the backward pass). 
+* **Loss customization:** if you need additional loss components to crossnetropy loss, or if you need any specific loss function, you can customize the class `CustomLoss` inside `utils/train_utils.py`. It is also recommended to use it even if you just use crossentropy, for standardization of the code. By default, the class receives a series of `**kwargs`, where `crossentropy` corresponds to the `torch.nn.CrossEntropyLoss()` that needs to be addes as an argument. Any other needed argument can be passed. 
+
+## Test customization
+
+Testing a TTT/TTA methods may require two scenarios for certain projects. First, testing on a target dataset without any adaptation, just measuring accuracy. For this case, please use `test.py`, which simply forward passes all the batches in a target dataset and computes the final accuracy. In the case of using adaptation, please utilize `test_adapt.py`. 
+
+Adaptation requires its own set of tools, all found in `utils/test_utils.py`. Similarly to the training utils, we can customize the adaptation loss (just remembering to avoid using crossentropy or any supervised loss, unless your method requires it). Other important components include: 
+
+* **Parameter extraction:** Depending on your technique, you might want to only adapt certain modules from your model. The function `get_parameters` does exactly this. The user may need to specify a "mode", which is simply an option that indicates which parameters to obtain. For instance, when `mode = layer`, and based on an argument `layer`, this function returns the model's encoder's parameters (conv layers, batch norm layers, etc.). More modes can be added depending on your use case, making this function fully customizable. 
+*  **Adaptation:** the function `adapt_batch` is designed to be fully customizable and to adapt for a batch during one single iteration. The function may receive addition arguments as needed and computes the backward pass inside. 
+*  **Evaluation:** the evaluation function `test_batch` is simply used to measure the accuracy ofver a batch, with no adaptation. 
+*  **Metric evaluation:** a special class `AdaptMeter` is constructed to keep track of accuracy across different numbers of iterations during adaptation. This is useful we adapt per batch and not to an entire dataset. Tipically, TTT/TTA models are adapted for 1, 3, 10, 20, and 50 iterations, as added by default as an argument for the class. An object of this class is used to update the correct predictions before and after adaptation, and to measure how many instances were correctly or misclassified after adapting the model. At the end, you can use it to compute final dataset accuracy using its `accuracy` method. Furthermore, it will compute for any given iteration you specify, as long as it was updated at the end of that specific iteration. 
+
+## Credits
+
+The TTTemplate is an effort to make Test-Time Adaptation and Test-Time Training experiments as fair as possible, all following the same standard pipeline, as well making it easy to perform experiments and develope new methods. If you found this repository useful for your research and/or developements, please consider citing it:
 
 
 
