@@ -62,8 +62,8 @@ def main(args):
     trloader, tr_sampler, teloader, te_sampler = prepare_dataset.prepare_train_data(args)
 
     '''Loss function'''
-    criterion = train_utils.CustomLoss()
-    #crossentropy = nn.CrossEntropyLoss()
+    crossentropy = torch.nn.CrossEntropyLoss()
+    criterion = train_utils.CustomLoss(crossentropy=crossentropy)
 
     '''Starting joint training'''
     dist_utils.dist_message('metrics', rank)
@@ -78,14 +78,14 @@ def main(args):
         acc_val, loss_val, val_epoch_time = train_utils.validate(model, criterion, trloader, augment=False, custom_forward=True)
 
         if args.distributed:
-            dist_utils.dist_message('epoch', rank, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
+            dist_utils.dist_message('epoch', rank, epoch=epoch, epochs=args.epochs, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
                                                    loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
         else:
             utils.message('epoch', rank, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
                                                    loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
 
         # Saving checkpoint
-        if (epoch + 1) % args.save_epochs == 0:
+        if (epoch + 1) % args.save_epoch == 0:
             model_state = model.module.state_dict() if args.distributed else model.state_dict()
             scheduler_state = scheduler.state_dict() if scheduler is not None else None
             state = {'epoch': epoch + 1,

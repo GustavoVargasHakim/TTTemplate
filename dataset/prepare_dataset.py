@@ -51,12 +51,13 @@ simclr_transforms = transforms.Compose([
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
 class TwoCropTransform:
-    """Create two crops of the same image"""
-    def __init__(self, transform):
-        self.transform = transform
+    """Create three crops of the same image (1 for crossentropy training, 2 for contrastive learning)"""
+    def __init__(self, transform_clr, transform_train):
+        self.transform_clr = transform_clr
+        self.transform_train = transform_train
 
     def __call__(self, x):
-        return [self.transform(x), self.transform(x)]
+        return [self.transform_train(x), self.transform_clr(x), self.transform_clr(x)]
 
 '''----------------------------------------Name of corruptions------------------------------------------'''
 common_corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur',
