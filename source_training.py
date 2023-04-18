@@ -10,15 +10,17 @@ from utils import utils, dist_utils, model_utils, train_utils
 def main(args):
     cudnn.benchmark = True
 
-    '''Initializing Distributed process (optional)'''
+    # Initializing Distributed process (optional)
     if args.distributed:
         rank, current_device = dist_utils.dist_configuration(args)
     else:
         current_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-    '''Creating model'''
+    # Creating model
     if args.dataset in ['visda', 'office']:
         weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
+        del weights['fc.weight']
+        del weights['fc.bias']
     else:
         weights = None
     model = model_utils.create_model(args, weights=weights, augment=False).to(current_device)
@@ -36,7 +38,7 @@ def main(args):
     else:
         scheduler = None
 
-    '''Loading checkpoint'''
+    # Loading checkpoint
     if args.resume:
         checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
         if args.distributed:
@@ -48,19 +50,19 @@ def main(args):
             scheduler.load_state_dict(checkpoint['scheduler'])
         args.start_epoch = checkpoint['start_epoch']
         if args.distributed:
-            dist_utils.dist_message('checkpoint', epoch=checkpoint['start_epoch'])
+            dist_utils.dist_message('checkpoint', rank, epoch=checkpoint['start_epoch'])
         else:
             utils.message('checkpoint', epoch=checkpoint['start_epoch'])
 
-    '''Generating dataloader'''
+    # Generating dataloader
     if args.distributed:
         dist_utils.dist_message('data', rank, dataset=args.dataset)
     trloader, tr_sampler, teloader, te_sampler = prepare_dataset.prepare_train_data(args)
 
-    '''Loss function'''
+    # Loss function
     criterion = nn.CrossEntropyLoss()
 
-    '''Starting source training'''
+    # Starting source training
     dist_utils.dist_message('metrics', rank)
     for epoch in range(args.start_epoch, args.epochs):
         tr_sampler.set_epoch(epoch)

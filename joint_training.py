@@ -9,38 +9,46 @@ from utils import utils, dist_utils, model_utils, train_utils
 def main(args):
     cudnn.benchmark = True
 
-    '''Initializing Distributed process (optional)'''
+    # Initializing Distributed process (optional)
     if args.distributed:
         rank, current_device = dist_utils.dist_configuration(args)
     else:
         current_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
-    '''Creating model'''
-    if args.dataset in ['visda', 'office']:
+    # Creating Model
+    if args.dataset in ['visda', 'office', 'imagenet']:
         if args.pretraining:
             weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
         else:
             weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
+            if args.dataset is not 'imagenet':
+                del weights['fc.weight']
+                del weights['fc.bias']
     else:
         if args.pretraining:
             weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
         else:
             weights = None
-    model = model_utils.create_model(args, weights=weights).to(current_device)
+    model = model_utils.create_model(args, augment=True, weights=weights).to(current_device)
     if args.distributed:
         dist_utils.dist_message('model', rank, model=args.model)
         model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
     else:
         utils.message('model', model=args.model)
 
-    if args.optim == 'sgd':
-        optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    # Model parameters and optimizer
+    if args.parameters == 'special':
+        parameters = train_utils.get_parameters(model, mode='splits', layers=args.layers)
     else:
-        optimizer = torch.optim.Adam(model.parameters(), args.lr)
+        parameters = model.parameters()
+    if args.optim == 'sgd':
+        optimizer = torch.optim.SGD(parameters, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    else:
+        optimizer = torch.optim.Adam(parameters, args.lr)
     if args.dataset in ['cifar10', 'cifar100']:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=(150, 250), gamma=0.1)
 
-    '''Loading checkpoint'''
+    # Loading checkpoint
     if args.resume:
         checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
         if args.distributed:
@@ -52,20 +60,20 @@ def main(args):
             scheduler.load_state_dict(checkpoint['scheduler'])
         args.start_epoch = checkpoint['start_epoch']
         if args.distributed:
-            dist_utils.dist_message('checkpoint', epoch=checkpoint['start_epoch'])
+            dist_utils.dist_message('checkpoint', rank, epoch=checkpoint['start_epoch'])
         else:
             utils.message('checkpoint', epoch=checkpoint['start_epoch'])
 
-    '''Generating dataloader'''
+    # Generating dataloader
     if args.distributed:
         dist_utils.dist_message('data', rank, data=args.dataset)
     trloader, tr_sampler, teloader, te_sampler = prepare_dataset.prepare_train_data(args)
 
-    '''Loss function'''
+    # Loss function
     crossentropy = torch.nn.CrossEntropyLoss()
     criterion = train_utils.CustomLoss(crossentropy=crossentropy)
 
-    '''Starting joint training'''
+    # Starting joint training
     dist_utils.dist_message('metrics', rank)
     for epoch in range(args.start_epoch, args.epochs):
         tr_sampler.set_epoch(epoch)
