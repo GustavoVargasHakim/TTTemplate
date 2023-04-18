@@ -29,6 +29,7 @@ def argparser():
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for optimizer')
     parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay for optimizer')
     parser.add_argument('--optimizer', type=str, default='sgd', help='Optimizer to use', choices=('sgd', 'adam'))
+    parser.add_argument('--parameters', type=str, default='normal', help='Model parameters to train', choices=('normal', 'special'))
     parser.add_argument('--evaluate', action='store_true', help='Evaluating on evaluation set')
     parser.add_argument('--resume', type=bool, default=False, help='Continuing from checkpoint')
     parser.add_argument('--save-epochs', type=int, default=5, help='Number of epochs to save weights')
@@ -37,19 +38,19 @@ def argparser():
     # Test-Time Adaptation
     parser.add_argument('--adapt', action='store_true', help='To adapt or not')
     parser.add_argument('--source', action='store_true', help='To use source model (no extra components)')
-    parser.add_argument('--mode', default='adapters', type=str, help='The parameters to adapt at test-time (method dependent)')
-    parser.add_argument('--niter', default=10, type=int, help='Iterations for adaptation')
+    parser.add_argument('--mode', type=str, default='adapters', help='The parameters to adapt at test-time (method dependent)')
+    parser.add_argument('--niter', type=int, default=10, help='Iterations for adaptation')
     parser.add_argument('--plr', type=float, default=0.001, help='Learning rate for projector training')
     '''For CIFAR-10/100-C'''
-    parser.add_argument('--level', default=5, type=int, help='Level of corruption (CIFAR-10/100-C)')
-    parser.add_argument('--corruption', default='gaussian_noise', help='Target dataset')
+    parser.add_argument('--level', type=int, default=5, help='Level of corruption (CIFAR-10/100-C)')
+    parser.add_argument('--corruption', type=str, default='gaussian_noise', help='Target dataset')
     '''For VisDA-C'''
     parser.add_argument('--domain', type=str, default='val', help='Domain dataset from VisDA-C')
 
     # Distributed
     parser.add_argument('--distributed', action='store_true', help='Activate distributed training')
     parser.add_argument('--init-method', type=str, default='tcp://127.0.0.1:3456', help='url for distributed training')
-    parser.add_argument('--dist-backend', default='gloo', type=str, help='distributed backend')
+    parser.add_argument('--dist-backend', type=str, default='gloo', help='distributed backend')
     parser.add_argument('--world-size', type=int, default=1, help='Number of nodes for training')
 
     # Method configuration
