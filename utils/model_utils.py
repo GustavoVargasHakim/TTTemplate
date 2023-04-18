@@ -26,8 +26,6 @@ def create_model(args, weights=None, augment=False, **kwargs):
 
     #Load imagenet-pretrained weights if available
     if weights is not None and args.dataset in ['visda', 'office']:
-        del weights['fc.weight']
-        del weights['fc.bias']
         model.load_state_dict(weights, strict=False)
 
     return model
@@ -55,6 +53,8 @@ def forward_small(self, x, feature=False):
     x = self.bn1(x)
     x = self.act1(x)
     x = self.layer1(x)
+    if hasattr(self, 'projector1'):
+        proj1 = self.projector1(x)
     features.append(x)
     x = self.layer2(x)
     features.append(x)
