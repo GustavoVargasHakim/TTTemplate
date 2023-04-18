@@ -41,6 +41,42 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+# Modify this custom function to get model's parameters based on your TTT/TTA needs
+def get_parameters(model, mode='layers', **kwargs):
+    '''
+    Extracting parameters to adapt from a model
+    :param model: joint-trained/source-trained model
+    :param mode: type of extraction (e.g., 'layers' for updating layer blocks)
+    :return: optimizer-ready parameters
+    '''
+    if mode == 'layers':
+        layer = kwargs['layer']
+        if layer == 1:
+            parameters = nn.ModuleList([model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1])
+        elif layer == 2:
+            parameters = nn.ModuleList([model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1, model.layer2])
+        elif layer == 3:
+            parameters = nn.ModuleList([model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1, model.layer2,
+                                        model.layer3])
+        elif layer == 4:
+            parameters = nn.ModuleList([model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1, model.layer2,
+                                        model.layer3, model.layer4])
+        return parameters.parameters()
+
+    if mode == 'splits':
+        layers = kwargs['layers']
+        layers = tuple(map(bool, layers))
+        parameters = []
+        if layers[0]:
+            parameters += list(model.split1.parameters())
+        elif layers[1]:
+            parameters += list(model.split2.parameters())
+        elif layers[2]:
+            parameters += list(model.split3.parameters())
+        elif layers[3]:
+            parameters += list(model.split4.parameters())
+
+        return parameters
 def train(model, criterion, optimizer, train_loader, augment=False, custom_forward=False):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
