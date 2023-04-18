@@ -1,7 +1,13 @@
 import torch
 
-def save_checkpoint(state, args):
-    root = args.save + args.dataset + '_source.pth'
+def save_checkpoint(state, mode, args, **kwargs):
+    if mode == 'source':
+        root = args.save + args.dataset + '_source.pth'
+    elif mode == 'joint':
+        info = ''
+        for key in kwargs:
+            info += '_' + key + str(kwargs[key])
+        root = args.save + args.dataset + '_joint' + info + '.pth'
     torch.save(state, root)
 
 def message(case, checkpoint=None, **kwargs):
