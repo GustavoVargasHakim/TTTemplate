@@ -15,6 +15,7 @@ def main(args):
         rank, current_device = dist_utils.dist_configuration(args)
     else:
         current_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+        rank = 0
 
     # Creating model
     if args.dataset in ['visda', 'office']:
@@ -25,10 +26,8 @@ def main(args):
         weights = None
     model = model_utils.create_model(args, weights=weights, augment=False).to(current_device)
     if args.distributed:
-        dist_utils.dist_message('model', rank, model=args.model)
         model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
-    else:
-        utils.message('model', model=args.model)
+    utils.message('model', rank, model=args.model)
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
@@ -48,16 +47,12 @@ def main(args):
         optimizer.load_state_dict(checkpoint['optimizer'])
         if args.dataset in ['cifar10', 'cifar100']:
             scheduler.load_state_dict(checkpoint['scheduler'])
-        args.start_epoch = checkpoint['start_epoch']
-        if args.distributed:
-            dist_utils.dist_message('checkpoint', rank, epoch=checkpoint['start_epoch'])
-        else:
-            utils.message('checkpoint', epoch=checkpoint['start_epoch'])
+        args.start_epoch = checkpoint['epoch']
+        utils.message('checkpoint', rank, epoch=checkpoint['epoch'])
 
     # Generating dataloader
-    if args.distributed:
-        dist_utils.dist_message('data', rank, dataset=args.dataset)
-    trloader, tr_sampler, teloader, te_sampler = prepare_dataset.prepare_train_data(args)
+    utils.message('data', rank, dataset=args.dataset)
+    train_loader, train_sampler, val_loader, val_sampler = prepare_dataset.prepare_train_data(args)
 
     # Loss function
     criterion = nn.CrossEntropyLoss()
@@ -65,20 +60,16 @@ def main(args):
     # Starting source training
     dist_utils.dist_message('metrics', rank)
     for epoch in range(args.start_epoch, args.epochs):
-        tr_sampler.set_epoch(epoch)
-        te_sampler.set_epoch(epoch)
+        train_sampler.set_epoch(epoch)
+        val_sampler.set_epoch(epoch)
 
         #Training step
-        acc_train, loss_train, tr_epoch_time = train_utils.train(model, criterion, optimizer, trloader, augment=False, custom_forward=False)
+        acc_train, loss_train, tr_epoch_time = train_utils.train(model, current_device, criterion, optimizer, train_loader, augment=False, custom_forward=False)
 
         #Valuation step
-        acc_val, loss_val, val_epoch_time = train_utils.validate(model, criterion, trloader, augment=False, custom_forward=False)
+        acc_val, loss_val, val_epoch_time = train_utils.validate(model, current_device, criterion, train_loader, augment=False, custom_forward=False)
 
-        if args.distributed:
-            dist_utils.dist_message('epoch', rank, epoch=epoch, epochs=args.epochs, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
-                                                   loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
-        else:
-            utils.message('epoch', rank, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
+        utils.message('epoch', rank, epoch=epoch, epochs=args.epochs, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
                                                    loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
 
         #Saving checkpoint
@@ -89,11 +80,7 @@ def main(args):
                      'state_dict': model_state,
                      'optimizer': optimizer.state_dict(),
                      'scheduler': scheduler_state}
-            if args.distributed and rank == 0:
-                utils.save_checkpoint(state, args)
-            else:
-                utils.save_checkpoint(state, args)
-
+            utils.save_checkpoint(state, rank, 'source', args)
 
 if __name__=='__main__':
     args = configuration.argparser()
