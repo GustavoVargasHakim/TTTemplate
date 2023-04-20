@@ -93,8 +93,8 @@ def main(args):
                      'state_dict': model_state,
                      'optimizer': optimizer.state_dict(),
                      'scheduler': scheduler_state}
-            utils.save_checkpoint(state, rank, 'joint', args)
-M
+            utils.save_checkpoint(args, state, rank, 'joint')
+
 if __name__=='__main__':
     args = configuration.argparser()
     main(args)

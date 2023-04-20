@@ -1,6 +1,6 @@
 import torch
 
-def save_checkpoint(state, rank, mode, args, **kwargs):
+def save_checkpoint(args, state, rank, mode, **kwargs):
     if rank == 0:
         if mode == 'source':
             root = args.save + args.dataset + '_source.pth'

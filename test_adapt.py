@@ -12,7 +12,7 @@ def experiment(args):
     cudnn.benchmark = True
 
     '''Loading model'''
-    utils.message('model', model=args.model)
+    utils.message('model', rank = 0, model=args.model)
     model = model_utils.create_model(args).to(device)
     if args.source:
         path = args.root + 'weights/' + args.dataset + '_source.pth'

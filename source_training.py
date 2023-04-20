@@ -58,7 +58,7 @@ def main(args):
     criterion = nn.CrossEntropyLoss()
 
     # Starting source training
-    dist_utils.dist_message('metrics', rank)
+    utils.message('metrics', rank)
     for epoch in range(args.start_epoch, args.epochs):
         train_sampler.set_epoch(epoch)
         val_sampler.set_epoch(epoch)
@@ -80,7 +80,7 @@ def main(args):
                      'state_dict': model_state,
                      'optimizer': optimizer.state_dict(),
                      'scheduler': scheduler_state}
-            utils.save_checkpoint(state, rank, 'source', args)
+            utils.save_checkpoint(args, state, rank, 'source')
 
 if __name__=='__main__':
     args = configuration.argparser()
