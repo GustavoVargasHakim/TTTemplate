@@ -4,7 +4,7 @@ def argparser():
     parser = argparse.ArgumentParser()
 
     # Directories
-    parser.add_argument('--root', type=str, default='/home/vhakim/projects/rrg-ebrahimi/vhakim/NAME_OF_PROJECT/', help='Base path')
+    parser.add_argument('--root', type=str, default='/home/vhakim/projects/def-ibenayed/vhakim/NAME_OF_PROJECT/', help='Base path')
     parser.add_argument('--dataroot', type=str, default='work/')
     parser.add_argument('--save', type=str, default='work/', help='Path for base training weights')
     parser.add_argument('--livia', action='store_true', help='To use LIVIA servers directories')
@@ -32,8 +32,9 @@ def argparser():
     parser.add_argument('--parameters', type=str, default='normal', help='Model parameters to train', choices=('normal', 'special'))
     parser.add_argument('--evaluate', action='store_true', help='Evaluating on evaluation set')
     parser.add_argument('--resume', type=bool, default=False, help='Continuing from checkpoint')
-    parser.add_argument('--save-epochs', type=int, default=5, help='Number of epochs to save weights')
+    parser.add_argument('--save-epoch', type=int, default=5, help='Number of epochs to save weights')
     parser.add_argument('--ignore-batch', action='store_true', help='Ignoring batch statistics during training/test-time')
+    parser.add_argument('--pretraining', action='store_true', help='Using special pretraining')
 
     # Test-Time Adaptation
     parser.add_argument('--adapt', action='store_true', help='To adapt or not')
