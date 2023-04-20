@@ -143,11 +143,13 @@ def prepare_train_data(args, contrastive=False):
     if args.dataset == 'cifar10':
         train_set = torchvision.datasets.CIFAR10(root=args.dataroot,
             train=True, download=False, transform=cifar_train)
-        val_set = None
+        val_set = torchvision.datasets.CIFAR10(root=args.dataroot,
+            train=False, download=False, transform=cifar_test)
     elif args.dataset == 'cifar100':
         train_set = torchvision.datasets.CIFAR100(root=args.dataroot + 'train/',
             train=True, download=False, transform=cifar_train)
-        val_set = None
+        val_set = torchvision.datasets.CIFAR100(root=args.dataroot,
+            train=False, download=False, transform=cifar_test)
     elif args.dataset == 'visda':
         if contrastive:
             dataset = ImageFolder(root=args.dataroot + 'train/', transform=TwoCropTransform(simclr_transforms))
