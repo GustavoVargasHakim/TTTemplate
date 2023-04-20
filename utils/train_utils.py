@@ -77,7 +77,7 @@ def get_parameters(model, mode='layers', **kwargs):
             parameters += list(model.split4.parameters())
 
         return parameters
-def train(model, criterion, optimizer, train_loader, augment=False, custom_forward=False):
+def train(model, device, criterion, optimizer, train_loader, augment=False, custom_forward=False):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     acc = AverageMeter('Acc@1', ':6.2f')
@@ -87,8 +87,8 @@ def train(model, criterion, optimizer, train_loader, augment=False, custom_forwa
 
     start = time.time()
     for i, (images, labels) in enumerate(train_loader):
-        images = images.cuda(non_blocking=True)
-        labels = labels.cuda(non_blocking=True)
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
 
         # Optional data augmentation
         if augment:
@@ -118,7 +118,7 @@ def train(model, criterion, optimizer, train_loader, augment=False, custom_forwa
 
     return acc.avg, losses.avg, batch_time.avg
 
-def validate(model, criterion, val_loader, augment=False, custom_forward=False):
+def validate(model, device, criterion, val_loader, augment=False, custom_forward=False):
     batch_time = AverageMeter('Time', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
     acc = AverageMeter('Acc@1', ':6.2f')
@@ -129,8 +129,8 @@ def validate(model, criterion, val_loader, augment=False, custom_forward=False):
     with torch.no_grad():
         start = time.time()
         for i, (images, labels) in enumerate(val_loader):
-            images = images.cuda(non_blocking=True)
-            labels = labels.cuda(non_blocking=True)
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
 
             # Optional data augmentation
             if augment:
