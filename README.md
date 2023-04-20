@@ -1,4 +1,4 @@
-# TTTemplate
+# TTTemplate: a standard test-bed for Test-Time Adaptation and Test-Time Training
 Pipeline template for Test-Time Training (TTT) and Test-Time-Adaptation (TTA). Fully customizable code based on PyTorch, featuring the following characteristics:
 
 1. Based on Timm models for standardization and ease of use. 
@@ -113,6 +113,16 @@ Adaptation requires its own set of tools, all found in `utils/test_utils.py`. Si
 ## Credits
 
 The TTTemplate is an effort to make Test-Time Adaptation and Test-Time Training experiments as fair as possible, all following the same standard pipeline, as well making it easy to perform experiments and develope new methods. If you found this repository useful for your research and/or developements, please consider citing it:
+
+```
+@miscelaneous{TTTemplate,
+  title={TTTemplate: a standard test-bed for Test-Time Adaptation and Test-Time Training},
+  author={Gustavo A. Vargas Hakim, David Osowiechi},
+  url={https://github.com/GustavoVargasHakim/TTTemplate}
+  month={May},
+  year={2023}
+}
+```
 
 
 
