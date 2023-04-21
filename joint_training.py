@@ -36,10 +36,7 @@ def main(args):
     utils.message('model', rank, model=args.model)
 
     # Model parameters and optimizer
-    if args.parameters == 'special':
-        parameters = train_utils.get_parameters(model, mode='splits', layers=args.layers)
-    else:
-        parameters = model.parameters()
+    parameters = train_utils.get_parameters(model, mode=args.parameters, distributed=args.distributed, layers=args.layers)
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(parameters, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:

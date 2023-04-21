@@ -42,14 +42,19 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 # Modify this custom function to get model's parameters based on your TTT/TTA needs
-def get_parameters(model, mode='layers', **kwargs):
+def get_parameters(model, mode='layers', distributed=False, **kwargs):
     '''
     Extracting parameters to adapt from a model
     :param model: joint-trained/source-trained model
     :param mode: type of extraction (e.g., 'layers' for updating layer blocks)
     :return: optimizer-ready parameters
     '''
-    if mode == 'layers':
+    if mode == 'normal':
+        return model.parameter()
+
+    if mode == 'layers': #Example to train layer blocks up to specific number
+        if distributed:
+            model = model.module
         layer = kwargs['layer']
         if layer == 1:
             parameters = nn.ModuleList([model.conv1, model.bn1, nn.ReLU(inplace=True), model.layer1])
@@ -63,18 +68,20 @@ def get_parameters(model, mode='layers', **kwargs):
                                         model.layer3, model.layer4])
         return parameters.parameters()
 
-    if mode == 'splits':
+    if mode == 'adapters': #Example for extra modules
+        if distributed:
+            model = model.module
         layers = kwargs['layers']
         layers = tuple(map(bool, layers))
         parameters = []
         if layers[0]:
-            parameters += list(model.split1.parameters())
+            parameters += list(model.adapter1.parameters())
         elif layers[1]:
-            parameters += list(model.split2.parameters())
+            parameters += list(model.adapter2.parameters())
         elif layers[2]:
-            parameters += list(model.split3.parameters())
+            parameters += list(model.adapter3.parameters())
         elif layers[3]:
-            parameters += list(model.split4.parameters())
+            parameters += list(model.adapter4.parameters())
 
         return parameters
 def train(model, device, criterion, optimizer, train_loader, augment=False, custom_forward=False):
