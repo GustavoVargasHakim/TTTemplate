@@ -65,7 +65,7 @@ def main(args):
 
     # Loss function
     crossentropy = torch.nn.CrossEntropyLoss()
-    criterion = train_utils.CustomLoss(crossentropy=crossentropy)
+    criterion = train_utils.CustomLoss(supervised=crossentropy)
 
     # Starting joint training
     utils.message('metrics', rank)

@@ -189,10 +189,10 @@ def forward_func(model, images, labels, labels_aug, criterion):
 class CustomLoss(nn.Module):
     def __init__(self, **kwargs):
         super(CustomLoss, self).__init__()
-        self.crossentropy = kwargs['crossentropy']
+        self.supervised = kwargs['supervised']
 
     def forward(self, output, target, **kwargs):
-        loss_ce = self.crossentropy(output, target)
-        loss_ce += 0.0
+        loss_ce = self.supervised(output, target)
+        loss_ce += 0.0 #Add additional losses (for Test-time training methods)
 
         return loss_ce
