@@ -193,6 +193,6 @@ class CustomLoss(nn.Module):
 
     def forward(self, output, target, **kwargs):
         loss_ce = self.supervised(output, target)
-        loss_ce += 0.0 #Add additional losses (for Test-time training methods)
+        loss_ce += 0.0 #Add additional losses using kwargs (for Test-time training methods)
 
         return loss_ce
