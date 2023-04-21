@@ -55,7 +55,7 @@ def argparser():
     parser.add_argument('--world-size', type=int, default=1, help='Number of nodes for training')
 
     # Method configuration
-    parser.add_argument('--layers', type=int, nargs='+', default=[0, 0, 0, 0])
+    parser.add_argument('--layers', type=int, nargs='+', default=[0, 0, 0, 0], help='Layer blocks to put additional modules on (very common in TTT methods)')
 
 
     return parser.parse_args()
