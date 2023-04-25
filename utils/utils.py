@@ -10,7 +10,9 @@ def layer_codes(layers):
     layer_code = ''
     for elem in layers:
         layer_code += str(elem)
-    codes = {'1000':1, '0100':2, '0010':3, '0001':4, '1100':12, '0110':23, '0011':34, '1111':'all'}
+    codes = {'1000':1, '0100':2, '0010':3, '0001':4,
+             '1100':12, '0110':23, '0011':34, '1010':13, '0101':24, '1001':14,
+             '1110':123, '0111':234, '1101':124, '1011':134, '1111':'all'}
     return codes[layer_code]
 
 def save_checkpoint(args, state, rank, mode, **kwargs):
