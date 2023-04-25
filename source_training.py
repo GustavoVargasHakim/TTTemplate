@@ -75,7 +75,7 @@ def main(args):
             val_epoch_time = 0.0
 
         utils.message('epoch', rank, epoch=epoch, epochs=args.epochs, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
-                                                   loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
+                                                  loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
 
         #Saving checkpoint
         if (epoch + 1) % args.save_epoch == 0:
