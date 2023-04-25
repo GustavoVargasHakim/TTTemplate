@@ -9,14 +9,14 @@ from utils import utils, dist_utils, model_utils, train_utils
 def main(args):
     cudnn.benchmark = True
 
-    # Initializing Distributed process (optional)
+    # Initializing Distributed process (optional)_______________________________________________________________________
     if args.distributed:
         rank, current_device = dist_utils.dist_configuration(args)
     else:
         current_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
         rank = 0
 
-    # Creating Model
+    # Creating Model____________________________________________________________________________________________________
     if args.dataset in ['visda', 'office', 'imagenet']:
         if args.pretraining:
             weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
@@ -35,7 +35,7 @@ def main(args):
         model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
     utils.message('model', rank, model=args.model)
 
-    # Model parameters and optimizer
+    # Model parameters and optimizer____________________________________________________________________________________
     parameters = train_utils.get_parameters(model, mode=args.parameters, distributed=args.distributed, layers=args.layers)
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(parameters, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -46,7 +46,7 @@ def main(args):
     else:
         scheduler = None
 
-    # Loading checkpoint
+    # Loading checkpoint________________________________________________________________________________________________
     if args.resume:
         checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
         if args.distributed:
@@ -59,15 +59,15 @@ def main(args):
         args.start_epoch = checkpoint['start_epoch']
         utils.message('checkpoint', rank, epoch=checkpoint['start_epoch'])
 
-    # Generating dataloader
+    # Generating dataloader_____________________________________________________________________________________________
     utils.message('data', rank, dataset=args.dataset)
     train_loader, train_sampler, val_loader, val_sampler = prepare_dataset.prepare_train_data(args)
 
-    # Loss function
+    # Loss function_____________________________________________________________________________________________________
     crossentropy = torch.nn.CrossEntropyLoss()
     criterion = train_utils.CustomLoss(supervised=crossentropy)
 
-    # Starting joint training
+    # Starting joint training___________________________________________________________________________________________
     utils.message('metrics', rank)
     for epoch in range(args.start_epoch, args.epochs):
         train_sampler.set_epoch(epoch)

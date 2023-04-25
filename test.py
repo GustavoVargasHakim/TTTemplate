@@ -11,7 +11,7 @@ def experiment(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     cudnn.benchmark = True
 
-    '''Loading model'''
+    # Loading model_____________________________________________________________________________________________________
     utils.message('model', rank=0, model=args.model)
     model = model_utils.create_model(args).to(device)
     if args.source:
@@ -22,7 +22,7 @@ def experiment(args):
     weights = checkpoint['state_dict']
     model.load_state_dict(weights)
 
-    '''Loading dataset'''
+    # Loading dataset___________________________________________________________________________________________________
     if args.dataset in ['cifar10', 'cifar100', 'office']:
         teloader, _ = prepare_dataset.prepare_test_data(args)
     elif args.dataset == 'visda':
@@ -31,7 +31,7 @@ def experiment(args):
         else:
             teloader, _ = prepare_dataset.prepare_test_data(args)
 
-    '''Test-Time Adaptation'''
+    # Testing___________________________________________________________________________________________________________
     print('Test-Time Adaptation')
     correct = 0.0
     for batch_idx, (inputs, labels) in tqdm(enumerate(teloader)):

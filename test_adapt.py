@@ -11,7 +11,7 @@ def experiment(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     cudnn.benchmark = True
 
-    '''Loading model'''
+    # Loading model_____________________________________________________________________________________________________
     utils.message('model', rank = 0, model=args.model)
     model = model_utils.create_model(args).to(device)
     if args.source:
@@ -23,17 +23,17 @@ def experiment(args):
     model.load_state_dict(weights)
     state = copy.deepcopy(model.state_dict())
 
-    '''Getting parameters'''
+    # Loading dataset___________________________________________________________________________________________________
     parameters = test_utils.get_parameters(mode=args.mode)
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(parameters, args.plr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
         optimizer = torch.optim.Adam(parameters, args.plr)
 
-    '''Loss Function'''
+    # Loss Function_____________________________________________________________________________________________________
     criterion = test_utils.CustomLoss()
 
-    '''Loading dataset'''
+    # Loading dataset___________________________________________________________________________________________________
     if args.dataset in ['cifar10', 'cifar100', 'office']:
         teloader, _ = prepare_dataset.prepare_test_data(args)
     elif args.dataset == 'visda':
@@ -42,7 +42,7 @@ def experiment(args):
         else:
             teloader, _ = prepare_dataset.prepare_test_data(args)
 
-    '''Test-Time Adaptation'''
+    # Test-Time Adaptation______________________________________________________________________________________________
     print('Test-Time Adaptation')
     iterations = (1,2,10,15,20,50)
     adapt_results = test_utils.AdaptMeter(length=len(teloader.dataset), iterations=iterations)
