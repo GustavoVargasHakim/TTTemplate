@@ -25,7 +25,7 @@ def create_model(args, weights=None, augment=False, **kwargs):
         model.forward = func_type(forward_large, model)
 
     #Load imagenet-pretrained weights if available
-    if weights is not None and args.dataset in ['visda', 'office']:
+    if weights is not None:
         model.load_state_dict(weights, strict=False)
 
     return model
