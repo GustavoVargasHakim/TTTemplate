@@ -29,7 +29,7 @@ def argparser():
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum for optimizer')
     parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay for optimizer')
     parser.add_argument('--optim', type=str, default='sgd', help='Optimizer to use', choices=('sgd', 'adam'))
-    parser.add_argument('--parameters', type=str, default='normal', help='Model parameters to train', choices=('normal', 'special'))
+    parser.add_argument('--parameters', type=str, default='full', help='Model parameters to train', choices=('full', 'special'))
     parser.add_argument('--validate', default=True, help='Evaluating on evaluation set')
     parser.add_argument('--resume', type=bool, default=False, help='Continuing from checkpoint')
     parser.add_argument('--save-epoch', type=int, default=5, help='Number of epochs to save weights')

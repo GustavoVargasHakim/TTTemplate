@@ -32,7 +32,7 @@ def main(args):
             weights = None
     model = model_utils.create_model(args, augment=True, weights=weights).to(current_device)
     if args.distributed:
-        model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
+        model = DDP(model, device_ids=[current_device], find_unused_parameters=False if args.parameters=='full' else True)
     utils.message('model', rank, model=args.model)
 
     # Model parameters and optimizer____________________________________________________________________________________

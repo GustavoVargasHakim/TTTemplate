@@ -26,7 +26,7 @@ def main(args):
         weights = None
     model = model_utils.create_model(args, weights=weights, augment=False).to(current_device)
     if args.distributed:
-        model = DDP(model, device_ids=[current_device], find_unused_parameters=True)
+        model = DDP(model, device_ids=[current_device])
     utils.message('model', rank, model=args.model)
     if args.optim == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)

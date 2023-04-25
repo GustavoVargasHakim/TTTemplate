@@ -49,7 +49,7 @@ def get_parameters(model, mode='layers', distributed=False, **kwargs):
     :param mode: type of extraction (e.g., 'layers' for updating layer blocks)
     :return: optimizer-ready parameters
     '''
-    if mode == 'normal':
+    if mode == 'full':
         return model.parameter()
 
     if mode == 'layers': #Example to train layer blocks up to specific number
