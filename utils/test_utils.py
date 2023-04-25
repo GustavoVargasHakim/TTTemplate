@@ -57,22 +57,41 @@ class Entropy(torch.nn.Module):
     def forward(self, x):
         return -(x.softmax(dim=1)*x.log_softmax(dim=0)).sum(1).mean()
 
-def test_batch(model, inputs, labels):
+def test_batch(model, images, labels, ttt_model=True):
     model.eval()
     with torch.no_grad():
-        outputs = model(inputs)
-        predicted = torch.argmax(outputs, dim=1)
+        if ttt_model:
+            output, _ = model(images)
+        else:
+            output = model(images)
+        predicted = torch.argmax(output, dim=1)
         correctness = predicted.eq(labels)
     return correctness
 
 #Modify this custom function to adapt the model's parameters for one iteration based on your TTT/TTA needs
-def adapt_batch(model, inputs, criterion, optimizer, **kwargs):
+def adapt_batch(model, images, criterion, optimizer, custom_forward=True, **kwargs):
     model.train()
-    output = model(inputs)
-    loss = criterion(output, K=kwargs['K'])
+    if custom_forward:
+        _, loss = forward_func(model, images, criterion, K=kwargs['K'])
+    else:
+        output = model(images)
+        loss = criterion(output, K=kwargs['K'])
     loss.backward()
     optimizer.zero_grad(set_to_none=True)
     optimizer.step()
+
+# Modify this custom forward function to your TTT needs
+def forward_func(model, images, criterion, **kwargs):
+    '''
+    Custom forward pass for TTT methods
+    :param model: custom model (must compute the normal and auxiliary tasks end to end)
+    :param criterion: custom loss function (must include crossentropy and all auxiliary losses)
+    :return: the prediction output and the loss function
+    '''
+    output, projections = model(images)
+    loss = criterion(projections, K=kwargs['K'])
+
+    return output, loss
 
 class AdaptMeter():
     """Computes and stores the predictions of batches at different iterations of adaptation"""
