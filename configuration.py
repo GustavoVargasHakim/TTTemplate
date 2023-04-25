@@ -13,7 +13,7 @@ def argparser():
     parser.add_argument('--seed', type=int, default=0, help='Random seed')
 
     # Dataset
-    parser.add_argument('--dataset', type=str, default='visda', choices=('cifar10', 'cifar100', 'visda', 'office'))
+    parser.add_argument('--dataset', type=str, default='visda', choices=('cifar10', 'cifar100', 'visda', 'office', 'imagenet'))
     parser.add_argument('--workers', type=int, default=8, help='Number of workers for dataloader')
     '''For OfficeHome only'''
     parser.add_argument('--category', type=str, default='Real World', help='Domain category (OfficeHome)', choices=('Art', 'Clipart', 'Product', 'Real World'))
