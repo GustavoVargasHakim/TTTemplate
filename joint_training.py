@@ -77,10 +77,15 @@ def main(args):
         acc_train, loss_train, tr_epoch_time = train_utils.train(model, current_device, criterion, optimizer, train_loader, augment=False, custom_forward=True)
 
         # Valuation step
-        acc_val, loss_val, val_epoch_time = train_utils.validate(model, current_device, criterion, val_loader, augment=False, custom_forward=True)
+        if args.validate:
+            acc_val, loss_val, val_epoch_time = train_utils.validate(model, current_device, criterion, val_loader, augment=False, custom_forward=True)
+        else:
+            acc_val = 0.0
+            loss_val = 0.0
+            val_epoch_time = 0.0
 
         utils.message('epoch', rank, epoch=epoch, epochs=args.epochs, loss_train=loss_train, acc_train=acc_train, time_train=tr_epoch_time,
-                                                   loss_val=loss_val, acc_val=acc_val, time_val=val_epoch_time)
+                                                   loss_val=loss_val, acc_val=acc_val, time_epoch=tr_epoch_time + val_epoch_time)
 
         # Saving checkpoint
         if (epoch + 1) % args.save_epoch == 0:
