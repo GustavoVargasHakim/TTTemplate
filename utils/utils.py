@@ -1,3 +1,4 @@
+import os
 import torch
 
 #Returns the an integer code corresponding to the chosen layers (useful for TTT methods)
@@ -18,12 +19,12 @@ def layer_codes(layers):
 def save_checkpoint(args, state, rank, mode, **kwargs):
     if rank == 0:
         if mode == 'source':
-            root = args.save + args.dataset + '_source.pth'
+            root = os.path.join(args.save, args.dataset + '_source.pth')
         elif mode == 'joint':
             info = ''
             for key in kwargs:
                 info += '_' + key + str(kwargs[key])
-            root = args.save + args.dataset + '_joint' + info + '.pth'
+            root = os.path.join(args.save, args.dataset + '_joint' + info + '.pth')
         torch.save(state, root)
 
 def message(case, rank, checkpoint=None, **kwargs):

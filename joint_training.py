@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.backends.cudnn as cudnn
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -18,13 +19,11 @@ def main(args):
 
     # Creating Model____________________________________________________________________________________________________
     if args.dataset in ['visda', 'office', 'imagenet']:
-        if args.pretraining:
-            weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')
-        else:
-            weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
-            if args.dataset != 'imagenet':
-                del weights['fc.weight']
-                del weights['fc.bias']
+        weights_root = os.path.join(args.root, 'weights', 'NAME_OF_PRETRAINED_WEIGHTS.pth' if args.pretraining else 'resnet50_imagenet.pth')
+        weights = torch.load(weights_root)
+        if not args.pretraining and args.dataset != 'imagenet':
+            del weights['fc.weight']
+            del weights['fc.bias']
     else:
         if args.pretraining:
             weights = torch.load(args.root +'weights/NAME_OF_PRETRAINED_WEIGHTS.pth')

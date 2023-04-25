@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
@@ -19,7 +20,7 @@ def main(args):
 
     # Creating model____________________________________________________________________________________________________
     if args.dataset in ['visda', 'office']:
-        weights = torch.load(args.root + 'weights/resnet50_imagenet.pth')
+        weights = torch.load(os.path.join(args.root, 'weights', 'resnet50_imagenet.pth'))
         del weights['fc.weight']
         del weights['fc.bias']
     else:
@@ -39,7 +40,7 @@ def main(args):
 
     # Loading checkpoint________________________________________________________________________________________________
     if args.resume:
-        checkpoint = torch.load(args.root + 'weights/INSERT_NAME_OF_FILE.pth')
+        checkpoint = torch.load(os.path.join(args.root, 'weights', 'INSERT_NAME_OF_FILE.pth'))
         if args.distributed:
             model.module.load_state_dict(checkpoint['state_dict'])
         else:

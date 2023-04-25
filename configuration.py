@@ -4,9 +4,9 @@ def argparser():
     parser = argparse.ArgumentParser()
 
     # Directories
-    parser.add_argument('--root', type=str, default='/home/vhakim/projects/def-ibenayed/vhakim/NAME_OF_PROJECT/', help='Base path')
-    parser.add_argument('--dataroot', type=str, default='work/')
-    parser.add_argument('--save', type=str, default='work/', help='Path for base training weights')
+    parser.add_argument('--root', type=str, default='/home/vhakim/projects/def-ibenayed/vhakim/NAME_OF_PROJECT', help='Base path')
+    parser.add_argument('--dataroot', type=str, default='work')
+    parser.add_argument('--save', type=str, default='work', help='Path for base training weights')
     parser.add_argument('--livia', action='store_true', help='To use LIVIA servers directories')
 
     # General settings
@@ -39,6 +39,7 @@ def argparser():
     # Test-Time Adaptation
     parser.add_argument('--adapt', action='store_true', help='To adapt or not')
     parser.add_argument('--source', action='store_true', help='To use source model (no extra components)')
+    parser.add_argument('--use-ttt', action='store_true', help='To use a TTT (augmented) model at test-time')
     parser.add_argument('--mode', type=str, default='adapters', help='The parameters to adapt at test-time (method dependent)')
     parser.add_argument('--niter', type=int, default=10, help='Iterations for adaptation')
     parser.add_argument('--plr', type=float, default=0.001, help='Learning rate for projector training')

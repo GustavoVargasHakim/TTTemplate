@@ -1,3 +1,4 @@
+import os
 import math
 import torch
 from torch.utils.data import random_split
@@ -74,14 +75,14 @@ def prepare_test_data(args):
             test_set = torchvision.datasets.CIFAR10(root=args.dataroot,
                 train=False, download=False, transform=cifar_test)
         elif args.corruption in common_corruptions:
-            test_set_raw = np.load(args.dataroot + '/CIFAR-10-C/%s.npy' % (args.corruption))
+            test_set_raw = np.load(os.path.join(args.dataroot, 'CIFAR-10-C', '%s.npy' % (args.corruption)))
             test_set_raw = test_set_raw[(args.level - 1) * tesize: args.level * tesize]
             test_set = torchvision.datasets.CIFAR10(root=args.dataroot,
                 train=False, download=False, transform=cifar_test)
             test_set.data = test_set_raw
 
         elif args.corruption == 'cifar_new':
-            test_set = CIFAR_New(root=args.dataroot + '/CIFAR10.1', transform=cifar_test)
+            test_set = CIFAR_New(root=os.path.join(args.dataroot, 'CIFAR10.1'), transform=cifar_test)
             permute = False
         else:
             raise Exception('Corruption not found!')
@@ -92,7 +93,7 @@ def prepare_test_data(args):
             test_set = torchvision.datasets.CIFAR100(root=args.dataroot,
                 train=False, download=False, transform=cifar_test)
         elif args.corruption in common_corruptions:
-            test_set_raw = np.load(args.dataroot + '/CIFAR-100-C/%s.npy' % (args.corruption))
+            test_set_raw = np.load(os.path.join(args.dataroot, 'CIFAR-100-C', '%s.npy' % (args.corruption)))
             test_set_raw = test_set_raw[(args.level - 1) * tesize: args.level * tesize]
             test_set = torchvision.datasets.CIFAR100(root=args.dataroot,
                 train=False, download=True, transform=cifar_test)
@@ -101,7 +102,7 @@ def prepare_test_data(args):
     elif args.dataset == 'visda':
         test_set = VisdaTest(args.dataroot, transforms=visda_test)
     elif args.dataset == 'office':
-        test_set = ImageFolder(root=args.dataroot + 'OfficeHomeDataset_10072016/' + args.category, transform=office_test)
+        test_set = ImageFolder(root=os.path.join(args.dataroot, 'OfficeHomeDataset_10072016', args.category), transform=office_test)
     else:
         raise Exception('Dataset not found!')
 
@@ -124,7 +125,7 @@ def prepare_test_data(args):
 
 def prepare_val_data(args):
     if args.dataset == 'visda':
-        val_set = ImageFolder(root=args.dataroot + 'validation/', transform=visda_test)
+        val_set = ImageFolder(root=os.path.join(args.dataroot,'validation'), transform=visda_test)
     else:
         raise Exception('Dataset not found!')
 
@@ -152,15 +153,15 @@ def prepare_train_data(args, contrastive=False):
             train=False, download=False, transform=cifar_test)
     elif args.dataset == 'visda':
         if contrastive:
-            dataset = ImageFolder(root=args.dataroot + 'train/', transform=TwoCropTransform(simclr_transforms))
+            dataset = ImageFolder(root=os.path.join(args.dataroot , 'train'), transform=TwoCropTransform(simclr_transforms))
         else:
-            dataset = ImageFolder(root=args.dataroot + 'train/', transform=visda_train)
+            dataset = ImageFolder(root=os.path.join(args.dataroot, 'train'), transform=visda_train)
         train_set, val_set = random_split(dataset, [106678, 45719], generator=torch.Generator().manual_seed(args.seed))
     elif args.dataset == 'office':
-        dataset = ImageFolder(root=args.dataroot + 'OfficeHomeDataset_10072016/' + args.category, transform=augment_transforms)
+        dataset = ImageFolder(root=os.path.join(args.dataroot, 'OfficeHomeDataset_10072016', args.category), transform=augment_transforms)
         long = len(dataset)
         train_set, val_set = random_split(dataset, [math.floor(long * 0.8),
-                                             math.floor(long * 0.2)], generator=torch.Generator().manual_seed(args.seed))
+                                                    math.floor(long * 0.2)], generator=torch.Generator().manual_seed(args.seed))
     else:
         raise Exception('Dataset not found!')
 
